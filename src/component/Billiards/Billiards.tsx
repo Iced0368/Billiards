@@ -34,19 +34,20 @@ function computeCollisionTimeError(obj1: PhysicsObjectState, obj2: PhysicsObject
 }
 
 export default function Billiards({ dispatch, timeStep=0.016 }: BilliardsProps) {
-    return (
+    return (    
         <div className='billiards-container' id='billiards'>
             <Physics
                 timeStep={timeStep}
                 velocityThreshold={5}
                 force={(self: PhysicsObjectState, objects: PhysicsObjectState[], frame?: number, setObjects?: React.Dispatch<React.SetStateAction<PhysicsObjectState[]>>) => {
                     let fx = 0, fy = 0;
-                    const k = 500;
-                    const restitution = 0.2; // 반발계수(1이면 완전탄성, 0이면 완전비탄성)
+                    const k = 1000;
+                    const friction = 30;
+                    const restitution = 0.5;
 
                     if (self.type === "wall") return { x: 0, y: 0 }; // 벽은 힘 없음
                     else if (self.type === "ball") {
-                        self.rotation = (self.rotation ?? 0) + (self.velocity.x / BALL_RADIUS) * 180 / Math.PI * 0.016;
+                        self.rotation = (self.rotation ?? 0) + (self.velocity.x / BALL_RADIUS) * 180 / Math.PI * timeStep;
 
                         for (const obj of objects) {
                             if (obj.id === self.id) continue;
@@ -75,11 +76,8 @@ export default function Billiards({ dispatch, timeStep=0.016 }: BilliardsProps) 
                                     const relVel = rvx * nx + rvy * ny;
                                     if (relVel > 0) continue; // 이미 멀어지는 중이면 무시
 
-                                    // 반발계수 적용: 충돌 방향 속도를 줄임
-                                    const impulse = -(1 + restitution) * relVel;
-                                    // 질량 고려(단순화: 자기만 반영)
-                                    fx -= (impulse * nx) / self.mass;
-                                    fy -= (impulse * ny) / self.mass;
+                                    fx += (restitution * relVel * nx) / self.mass;
+                                    fy += (restitution * relVel * ny) / self.mass;
 
                                     // 충돌 이벤트 디스패치
                                     dispatch && dispatch({ type: "collision", payload: {target: [self.id, obj.id].sort(), frame: frame} });
@@ -110,10 +108,8 @@ export default function Billiards({ dispatch, timeStep=0.016 }: BilliardsProps) 
                                     const relVel = self.velocity.x * nx + self.velocity.y * ny;
                                     if (relVel > 0) continue; // 이미 멀어지는 중이면 무시
 
-                                    // 반발계수 적용: 충돌 방향 속도를 줄임
-                                    const impulse = -(1 + restitution) * relVel;
-                                    fx += (impulse * nx) / self.mass;
-                                    fy += (impulse * ny) / self.mass;
+                                    fx += (restitution * relVel * nx) / self.mass;
+                                    fy += (restitution * relVel * ny) / self.mass;
                                 }
                             }
 
@@ -139,10 +135,9 @@ export default function Billiards({ dispatch, timeStep=0.016 }: BilliardsProps) 
                         }
 
                         // 구름 마찰력
-                        const frictionForce = 40;
                         const v = Math.hypot(self.velocity.x, self.velocity.y) + 1e-6;
-                        fx -= frictionForce * (self.velocity.x / v);
-                        fy -= frictionForce * (self.velocity.y / v);
+                        fx -= friction * (self.velocity.x / v);
+                        fy -= friction * (self.velocity.y / v);
 
                         return { x: fx, y: fy };
                     }
@@ -163,12 +158,12 @@ export default function Billiards({ dispatch, timeStep=0.016 }: BilliardsProps) 
 
                                 self.excluded = true; // 큐대 비활성화
                                 
-                                const deltaT = computeCollisionTimeError(self, obj);
-                                console.log("collision error=", deltaT);
+                                const deltaTerror = computeCollisionTimeError(self, obj);
+                                console.log("collision error=", deltaTerror);
 
-                                const direction = { 
-                                    x: (dx - deltaT*(obj.velocity.x - impulseX)), 
-                                    y: (dy - deltaT*(obj.velocity.y - impulseY)) 
+                                const direction = {
+                                    x: (dx - deltaTerror * (obj.velocity.x - impulseX)),
+                                    y: (dy - deltaTerror * (obj.velocity.y - impulseY))
                                 };
                                 const directionMag = Math.hypot(direction.x, direction.y) + 1e-6;
                                 const cosine = (impulseX * direction.x + impulseY * direction.y) / (impulseMag * directionMag);

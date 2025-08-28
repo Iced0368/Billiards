@@ -128,7 +128,7 @@ export default function CanvasOverlay() {
 
             setObjects?.(prev => {
                 const filtered = prev.filter(obj => obj.id !== "cue-stick");
-                const maxNorm = 300;
+                const maxNorm = 200;
                 const norm = Math.hypot(direction.x, direction.y);
                 let vx = direction.x, vy = direction.y;
                 if (norm > maxNorm) {

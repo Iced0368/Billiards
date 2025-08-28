@@ -21,7 +21,7 @@ export interface PhysicsProps {
     force: (
         self: PhysicsObjectState,
         objects: PhysicsObjectState[],
-        frame?: number,
+        order?: number,
         setObjects?: React.Dispatch<React.SetStateAction<PhysicsObjectState[]>>
     ) => Vector2D;
     velocityThreshold?: number; // 추가: 속도 임계값 옵션
@@ -64,40 +64,42 @@ export const Physics: React.FC<PhysicsProps> = ({
         );
 
     const [objects, setObjects] = useState<PhysicsObjectState[]>(initialObjects);
-    const frame = useRef<number>(0);
+    const order = useRef<number>(0);
 
+    const runPhysicsTime = (deltaT: number) => {
+        setObjects(prevObjects => {
+            let nextObjects = prevObjects.map((obj, _, arr) => {
+                if (obj.excluded) return obj; // 비활성화된 객체는 무시
+                const result = force(obj, arr.filter(o => !o.excluded), order.current, setObjects);
+
+                const f = { x: result.x ?? 0, y: result.y ?? 0 };
+                const ax = f.x / obj.mass;
+                const ay = f.y / obj.mass;
+                let newVx = (obj.velocity?.x ?? 0) + ax * deltaT;
+                let newVy = (obj.velocity?.y ?? 0) + ay * deltaT;
+                // 속도 임계값 적용
+                if (Math.hypot(newVx, newVy) < velocityThreshold) {
+                    newVx = 0;
+                    newVy = 0;
+                }
+                const newX = obj.position.x + newVx * deltaT;
+                const newY = obj.position.y + newVy * deltaT;
+                return {
+                    ...obj,
+                    ...result,
+                    velocity: { x: newVx, y: newVy },
+                    position: { x: newX, y: newY },
+                };
+            });
+
+            return nextObjects;
+        });
+    }
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setObjects(prevObjects => {
-                let nextObjects = prevObjects.map((obj, _, arr) => {
-                    if (obj.excluded) return obj; // 비활성화된 객체는 무시
-                    const result = force(obj, arr.filter(o => !o.excluded), frame.current, setObjects);
-
-                    const f = { x: result.x ?? 0, y: result.y ?? 0 };
-                    const ax = f.x / obj.mass;
-                    const ay = f.y / obj.mass;
-                    let newVx = (obj.velocity?.x ?? 0) + ax * timeStep;
-                    let newVy = (obj.velocity?.y ?? 0) + ay * timeStep;
-                    // 속도 임계값 적용
-                    if (Math.hypot(newVx, newVy) < velocityThreshold) {
-                        newVx = 0;
-                        newVy = 0;
-                    }
-                    const newX = obj.position.x + newVx * timeStep;
-                    const newY = obj.position.y + newVy * timeStep;
-                    return {
-                        ...obj,
-                        ...result,
-                        velocity: { x: newVx, y: newVy },
-                        position: { x: newX, y: newY },
-                    };
-                });
-
-                return nextObjects;
-            });
-            
-            frame.current += 1;
+            runPhysicsTime(timeStep);
+            order.current += 1;
             
         }, timeStep * 1000);
         return () => clearInterval(interval);
