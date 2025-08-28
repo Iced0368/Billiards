@@ -1,0 +1,88 @@
+
+.ball-container {
+    position: absolute;
+    filter: drop-shadow(0 10px 18px rgba(0,0,0,.7));
+    z-index: 2;
+}
+
+.ball{
+    --size: 36px;
+    --color: #f5c400;           /* 공의 기본색 */
+    --edge: 12%;                 /* 테두리 음영 두께 */
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    /* 기본 구면 느낌(하이라이트+림 쉐도우) */
+    background:
+        radial-gradient(circle at 30% 28%, rgba(255,255,255,.85) 0 12%, rgba(255,255,255,0) 40%) ,
+        radial-gradient(circle at 50% 120%, rgba(0,0,0,.35), rgba(0,0,0,0) 55%) ,
+        radial-gradient(circle, var(--color) calc(100% - var(--edge)), #000 100%);
+    box-shadow: inset 0 -6px 10px rgba(0,0,0,.25);
+    display: inline-block;
+    transform: translate(-50%, -50%);
+
+    transition: 0.3s transform, 0.3s opacity;
+}
+
+.ball.potted {
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+}
+
+/* 숫자 원형 패치 */
+.ball.stripe::after,
+.ball.solid::after {
+    content: attr(data-num);
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 40%;
+    height: 40%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff 0 60%, #e9e9e9 100%);
+    color: #111;
+    font: 700 calc(var(--size)*0.26)/1.05 ui-sans-serif, system-ui, "Segoe UI", Roboto, AppleSDGothicNeo, "Noto Sans KR", sans-serif;
+    display: grid;
+    place-items: center;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.15);
+}
+
+/* 스트라이프(가로 밴드) 레이어 추가 */
+.ball.stripe{
+    background:
+        /* 줄무늬: 중앙 40%만 흰색 밴드 */
+        linear-gradient(to bottom,
+        rgba(255,255,255,0) 0 30%,
+        #fff 30% 70%,
+        rgba(255,255,255,0) 70% 100%),
+        /* 기본 구면 쉐이딩들 */
+        radial-gradient(circle at 30% 28%, rgba(255,255,255,.85) 0 12%, rgba(255,255,255,0) 40%),
+        radial-gradient(circle at 50% 120%, rgba(0,0,0,.35), rgba(0,0,0,0) 55%),
+        radial-gradient(circle, var(--color) calc(100% - var(--edge)), #000 100%);
+}
+
+/* 솔리드 볼은 기본 배경만 사용 */
+.ball.solid{}
+
+/* 약간의 유광 하이라이트(유리 코팅 느낌) */
+.ball::before{
+    content: "";
+    position: absolute;
+    top: 6%;
+    left: 14%;
+    width: 36%;
+    height: 26%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, rgba(255,255,255,.9) 0 50%, rgba(255,255,255,0) 60%);
+    filter: blur(1px);
+    transform: rotate(-12deg);
+    pointer-events: none;
+}
+
+.hole {
+    position: absolute;
+    background-color: #000;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}

@@ -1,0 +1,10 @@
+.canvas-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none; /* 클릭 무시 */
+    border-radius: 16px;
+    box-shadow: inset 0 0 16px rgba(0,0,0,.35);
+    z-index: 3; /* cue-stick 보다 아래, ball 보다 위 */
+
+    overflow: visible;
+}

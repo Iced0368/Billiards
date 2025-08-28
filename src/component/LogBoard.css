@@ -1,0 +1,15 @@
+.log-board {
+    width: 300px;
+    height: 60vh;
+    overflow-y: scroll;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.log-entries {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}

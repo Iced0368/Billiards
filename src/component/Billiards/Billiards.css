@@ -1,0 +1,11 @@
+.billiards-container {
+    position: relative;
+
+    .physics-canvas {
+        background: #008800;  /* 녹색 당구대 느낌 */    
+        border-radius: 16px;
+        box-shadow: 0 0 0 20px #613b16, 0 8px 16px rgba(0,0,0,.25);
+        margin: auto;
+        touch-action: none; /* 터치 스크롤 방지 */
+    }
+}
