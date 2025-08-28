@@ -35,7 +35,7 @@ function computeCollisionTimeError(obj1: PhysicsObjectState, obj2: PhysicsObject
 
 export default function Billiards({ dispatch, timeStep=0.016 }: BilliardsProps) {
     return (
-        <div className='billiards-container'>
+        <div className='billiards-container' id='billiards'>
             <Physics
                 timeStep={timeStep}
                 velocityThreshold={5}
@@ -172,8 +172,6 @@ export default function Billiards({ dispatch, timeStep=0.016 }: BilliardsProps) 
                                 };
                                 const directionMag = Math.hypot(direction.x, direction.y) + 1e-6;
                                 const cosine = (impulseX * direction.x + impulseY * direction.y) / (impulseMag * directionMag);
-
-                                console.log(direction, cosine)
 
                                 // 공에 힘을 가함
                                 setObjects?.(prev =>

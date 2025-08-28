@@ -1,5 +1,11 @@
 .billiards-container {
+    display: flex;
+    justify-content: center;
+    
     position: relative;
+    width: 1000px;
+    height: 500px;
+    overflow: hidden;
 
     .physics-canvas {
         background: #008800;  /* 녹색 당구대 느낌 */    
